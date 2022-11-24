@@ -17,14 +17,14 @@ class Integrator:
         # Physical quantities
         self.M = M
         # Defining the observables used
-        self.obs = {"r": [], "r_dot": [], "phi": [], "phi_dot": [], "t": []}
+        # self.obs = {"r": [], "r_dot": [], "phi": [], "phi_dot": [], "t": []}
+        self.obs = np.empty((1,4))
         self.initiate_initial_condition(initial_conditions)
         
     
     def initiate_initial_condition(self, initial_conditions):
-        for key, val in initial_conditions.items():
-            assert key in self.obs
-            self.obs[key].append(val)
+        for i, val in enumerate(initial_conditions):
+            self.obs[0,i] = val
     
     
     def save_observable(self, key, val):
@@ -41,10 +41,8 @@ class Integrator:
     def run_simulation(self):
         
         for t in self.t_array:
-            self.integrate_step(t)
+            self.obs = np.vstack((self.obs, self.integrate_step(t)))
             
-        return self.obs
-    
     
 def main():
     

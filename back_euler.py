@@ -1,75 +1,113 @@
+import numpy as np
+
 from base_integrator import Integrator
 
 # child class
 class BackEuler(Integrator):
 
-    def __init__(self, initial_conditions, dt, t_end, t_start=0):
+    def __init__(self, initial_conditions, dt, t_end, t_start=0, M=1):
      # call super() function
-        super().__init__(initial_conditions, dt, t_end, t_start)
+        super().__init__(initial_conditions, dt, t_end, t_start, M)
 
+    # def function_r_dot(self, x):
+    #     return (-4*self.M**2 + 2*self.M*x[0] + (x[0]-5*self.M) * x[0]**3 * x[3]**2) / (x[0]**3)
 
-    def _r_rate_function(self, r, phi_dot):
-        return (-4*self.M**2 + 2*self.M*r + (r-5*self.M) * r**3 * phi_dot**3) / (r**3)
-
-
-    def _r_function(self, r_dot):
-        return r_dot
-
-
-    def _phi_rate_function(self, r, r_dot, phi_dot):
-        return (2 * (-3*self.M + r) * r_dot * phi_dot ) / ((2*self.M - r) * r)
-
-
-    def _phi_rate_derivative(self, r, r_dot):
-        return (2 * (-3*self.M + r) * r_dot) / ((2*self.M - r) * r)
-
-
-    def _phi_function(self, phi_dot):
-        return phi_dot
-
-
-    def get_phi_rate(self, initial_guess, r, r_dot, threshold=0.01):
-        print(self._phi_rate_function(r, r_dot, initial_guess))
-        x_new = initial_guess - self._phi_rate_function(r, r_dot, initial_guess) / self._phi_rate_derivative(r, r_dot)
-        if abs(x_new - initial_guess) < threshold:
-            return x_new
-        else:
-            return self.get_phi_rate(x_new, r, r_dot)
-
-
-    def integrate_step(self, t):
-       # Implementation of the back euler algorithm
-        # First, integrate the rate of r
-        self.obs["r_dot"].append(self.obs["r_dot"][-1] + self.dt * self._r_rate_function(self.obs["r"][-1], self.obs["phi_dot"][-1]))
-        self.obs["r"].append(self.obs["r"][-1] + self.dt * self._r_function(self.obs["r_dot"][-1]))
-        # new_r_dot  = self.obs["r_dot"][-1] + self.dt * self._r_rate_function(self.obs["r"][-1], self.obs["phi_dot"][-1])
-        # new_r = self.obs["r"][-1] + self.dt * self._r_function(new_r_dot)
+    def function_r_dot(self, x):
+        terms =[
+            4 * self.M**3,
+            - 4 * self.M**2 * x[0], 
+            - 4 * self.M * x[0]**3 * x[3]**2,
+            4 * self.M * x[0]**4 * x[3]**2, 
+            - x[0]**5 * x[3]**2, 
+            x[0]**2 * (self.M - 3*self.M*x[1]**2)
+        ]
         
-        # The, we can use back Euler for phi_dot
-        self.obs["phi_dot"].append(self.get_phi_rate(self.obs["phi_dot"][-1], self.obs["r"][-1], self.obs["r_dot"][-1]))
-        self.obs["phi"].append(self.obs["phi"][-1] + self.dt * self.obs["phi_dot"][-1])
-        # new_phi_dot = self.get_phi_rate(self.obs["phi_dot"][-1], new_r, new_r_dot)
-        # new_phi = self.obs["phi"][-1] + self.dt * new_phi_dot
+        return sum(terms) / ((2*self.M - x[0]) * x[0]**3)
+        
+    def function_r(self, x):
+        return x[1]
+
+    def function_phi_dot(self, x):
+        r = x[0]
+        r_dot = x[1]
+        phi_dot = x[3]
+        return (2 * (-3*self.M + r) * r_dot * phi_dot ) / ((2*self.M - r) * r)
+    
+    def function_phi(self, x):
+        return x[3]
+
+    def get_jacobian(self, x):
+        # TODO rewrite this thing
+        r = x[0]
+        r_dot = x[1]
+        phi_dot = x[3]
+        
+        # Define jacobian
+        J = np.zeros((4,4)) + np.diag(np.array([1, 1, 1, 1]))
+        # Define non-trivial elemts of the matrix
+        J[0,1] = -self.dt
+        # J[1,0] = -self.dt * ( 12*self.M**2 / (r**4) - 4*self.M / (r**3) + phi_dot**2)
+        terms_j10 = [
+            (16*x[0] - 24*self.M) * self.M**3 * x[0]**2 / (((2*self.M-x[0]) * x[0]**3)**2), 
+            (16*self.M - 12*x[0]) * self.M**2 * x[0] / (((2*self.M-x[0]) * x[0]**2)**2), 
+            (4*self.M * x[0] * x[3]**2 - 4*self.M**2 * x[3]**2 - x[0]**2 * x[3]**2) / ((2*self.M - x[0])**2), 
+            (4*self.M * x[3]**2 - 2 * x[0] * x[3]**2)
+        ]
+        J[1,0] = -self.dt * sum(terms_j10)
+        J[1,1] += -self.dt * -6*self.M * x[1] / ((2*self.M - x[0])*x[0] )
+        J[1,3] = -self.dt * x[3] / (2*self.M - x[0]) * (8*self.M * x[0] - 8*self.M**2 - 2 * x[0]**2)
+        J[2,3] = -self.dt 
+        J[3,0] = -self.dt * (  ( 12 * (self.M-r)* self.M * r_dot * phi_dot ) / (( (2*self.M-r) * r)**2 ) + (2 * r_dot * phi_dot) / ((2*self.M - r)**2) )
+        J[3,1] = -self.dt * (2 * (-3*self.M - r) * phi_dot) / ((2*self.M - r) * r)
+        J[3,3] += -self.dt * (2 * (-3*self.M - r) * r_dot) / ((2*self.M - r) * r)
+        
+        return J
+
+    def newtons_method(self, last_time_step, epsilon=1e-7):
+        """ Returns the next state of the system. """
+        x = last_time_step
+        x_old = x + 1
+        
+        while np.linalg.norm(x_old - x) > epsilon:        
+            jacobian = self.get_jacobian(x)
+            
+            F = x - last_time_step - self.dt * np.array([
+                self.function_r(x), 
+                self.function_r_dot(x), 
+                self.function_phi(x), 
+                self.function_phi_dot(x) 
+            ]).T
+            
+            y = - np.matmul(np.linalg.inv(jacobian), F)
+            x_old = x
+            x += y
+
+        return x
+        
+    def integrate_step(self, t):
+        last_time_step = self.obs[-1,:]
+        return self.newtons_method(last_time_step)
+        
         
         
 
 def main():
     t_start = 0
     t_end = 1
-    dt = 0.1
+    dt = 0.001
     
-    initial_conditions = {
-        "r": 1, 
-        "r_dot": 1, 
-        "phi": 1, 
-        "phi_dot": 1, 
-        "t": t_start
-    }
+    # initial_conditions = {
+    #     "r": 1, 
+    #     "r_dot": 1, 
+    #     "phi": 1, 
+    #     "phi_dot": 1, 
+    #     "t": t_start
+    # }
+    
+    initial_conditions = np.array([1.0,1.0,1.0,1.0])
     
     integrator = BackEuler(initial_conditions, dt, t_end, t_start)
+    integrator.newtons_method(initial_conditions, initial_conditions)
     
-    integrator.run_simulation()
-    print(integrator.obs["phi"])
-
 if __name__ == '__main__':
     main()
