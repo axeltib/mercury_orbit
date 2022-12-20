@@ -1,0 +1,62 @@
+\documentclass[11pt]{article}
+
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{graphbox}
+
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{parskip}
+
+\usepackage{physics}
+\usepackage{slashed}
+
+\usepackage[compat=1.1.0]{tikz-feynman}
+
+\usepackage{pgffor}
+
+\usepackage[margin=1in,footskip=0.25in]{geometry}
+
+% Margins
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+
+%\setlength{\jot}{10pt}
+
+\newcommand{\qe}[1]{
+	\begin{center}
+		\fbox{\parbox{0.9\textwidth}{#1}}
+	\end{center}
+}
+
+\setlength{\jot}{8pt}
+
+
+\title{Study of Relativistic Effects in Orbital Mechanics Using Numerical Methods}
+\author{Axel Tibbling}
+\date{ }
+
+
+\begin{document}
+\maketitle
+
+%  Include nice image here
+
+\input{introduction}
+
+\input{method}
+
+\input{results}
+
+\input{discussion}
+
+
+\bibliographystyle{plain} % We choose the "plain" reference style
+\bibliography{references} % Entries are in the refs.bib file
+\end{document}
+
+pdflatex: --aux-directory=build
+bibtex: build/% -use-directory=build

@@ -1,6 +1,6 @@
 import numpy as np
 
-from back_euler import BackEuler
+from integrators.back_euler import BackEuler
 
 def main():
     t_start = 0
