@@ -1,0 +1,42 @@
+\section{Introduction}\label{sec:introduction}
+
+\subsection{Theoretical background}
+
+In general relativity (GR) is one of the more central and useful properties the \textit{metric}. We recall that in GR are there three spatial coordinates ($x, y, z$) and one time componen ($y$). These four quantities make ut a space time coordinate, which describes a spatial point in time. The universe can be thought of consisting of a grid-like blanket (mathematically it is called a \textit{manifold}) which describes the space time. The "blanket" can be be folded and creased describing disturbances made by massive objects in space. However, because the universe is infinite, where is origo found?
+
+In the euclidian coordinate system vectors are used to describe the distance in a certain direction. In GR it is more useful to define a \textit{tangent basis}, which instead describes the change of the coordinates in a certain direction (simply put). To then describe distance, one cannot just study the vectors. This is where the metric comes in, as it describes how the manifold changes in certain directions. The notion of lengths the comes in the form of an infitesimal distance with the line segment \cite{guidry_2019}:
+
+\begin{equation}
+	ds^2 = g_{ij} du^i du^j
+\end{equation}
+
+where $g_{ij}$ are the components of the metric, and $du^i$ is the basis vectors. In GR is length (or \textit{proper length}) and so called \textit{proper time} isomorphic. Proper time describes the time of a clock following the line of interest on a manifold. The lines objects follow are called \textit{geodesics}, and are the lines which minimize the action which often are constructed by the metric. More explicitly, one creates the Lagrangian, and then by the least action principle, the Euler-Lagrange equations yield the equations of motion (EOM) that describe the geodesics \cite{guidry_2019}. 
+
+% Do I want to have this here, or in the problem description?
+In this paper we will study the Schwarzschild metric, which is used to describe the gravitational curvature around a black hole (or rather a massive object). It is expressed in polar coordinates around the massive point, and can be used to study how light rays and (smaller) massive objects travel along lines around more massive objects. Given in \cite{gould_2007, guidry_2019}, the Schwarzschild metric is
+
+\begin{equation}\label{eq:schwarzschild-metric}
+	d\sigma^2 = -d\tau^2 = - \left( 1 - \frac{2M}{r}\right)dt^2 + \left(1 - \frac{2M}{r}\right)^{-1} dr^2 + r^2 d\phi^2
+\end{equation}
+
+where $d\sigma$ is the proper distance and $d\tau$ is the proper time, while $M$ is the mass of the source of the gravitational curvature. Directly, there are two things that can be observed. Firstly, there is no angular dependence: it is has circular symmetry. Further, there is one singularity at $r_s = 2M$, which is commonly called the Schwarzschild radius \cite{guidry_2019}. 
+
+In order to be able to numerically study this, the EOM is needed, which are given on page 760 in \cite{gould_2007}
+
+\begin{align}\label{eq:eoms}
+      		\frac{dr}{dt} &= \dot{r} \\
+	\frac{d\dot{r}}{dt} &= \frac{4 M^3-4 M^2 r-4 M^2 r^3 \dot{\phi}^2+4 M r^4 \dot{\phi}^2-r^5 \dot{\phi}^2+r^2\left(M-3 M \dot{r}^2\right)}{(2 M-r) r^3} \\
+	\frac{d\phi}{dt} &= \dot{\phi} \\
+	\frac{d\dot{\phi}}{dt} &= \frac{2(-3M + r)\dot{r}\dot{\phi}}{(2M - r)r} \\
+	\frac{dt}{dt} &= 1
+\end{align}
+
+and can be obtained using the Euler-Lagrange equations on \eqref{eq:schwarzschild-metric}. 
+
+\subsection{The problem}
+Numerical methods are a tool to model reality. In reality is Mercury close enough to the Sun for relativistic effects to affect tye system \cite{wiki_precession}. Thus will we calculate the orbit time and periohelion precession of Mercury around the Sun, and compare it to observed values.  
+
+In order to solve the equations of motion we will use three different numerical integrators: Euler method, Backward Euler and Runge-Kutta 4 (RK4). In addition to the main goals, we also want to study how the integrators compare and will be done through analysis of energy conservation and error propagation.
+
+In section \ref{sec:method} will the different numerical methods used be described and how the discritezation is done. Followed by that, in \ref{sec:results} will the orbit of Mercury be simulated, with the analysis of the integrators used.  Finally, in \ref{sec:disscussion} will the results be discussed, comparing the results and making concluding remarks. 
+

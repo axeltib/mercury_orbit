@@ -1,0 +1,94 @@
+\section{Method}\label{sec:method}
+
+\subsection{Integrators}
+
+Before describing the integrators, we introduce the following notation for the state vector
+
+\begin{equation}
+	(x_1, x_2, x_3, x_4) := (r, \dot{r}, \phi, \dot{\phi})
+\end{equation}
+
+and is denoted by $\textbf{x}^i$, where $i$ denotes the current step. The state coordinate $r$ is the radius from the central massive object, and $\dot{{r}}$ is the timederivative. At the same tame, predictably, $\phi$ describes the angle at which the orbiting object is in relation to the massive and $\dot{\phi}$ is the time derivative. Furthermore, the function $\textbf{f}(\textbf{x})$ is then defined as the EOMs \eqref{eq:eoms}. Finally, the timestep is defined as $h$, and is used as a parameter in the integrators.  
+
+\subsubsection{Euler method}
+Being one of the simplest numerical integrators, it serves as a good foundation to compare the other methods to. As we will se does it behave better in some regards, but is generally found to be the lower limit of performance between the integrators. The equation defining this method is
+
+\begin{equation}\label{eq:euler-method-equation}
+	\textbf{x}^{n+1} = \textbf{x}^n + h \textbf{f}(\textbf{x}^n) 
+\end{equation}
+
+
+\subsubsection{Backward Euler method}
+
+Because this method depends on the equations of motion and the derivative (Jacobian) of the as well, it was much more difficult to implement, and in the case that the EOM are slightly changed, one must recalculate the derivative, and hence reformulate the algorithm for Euler backward as well. This makes this method slightly inconvinient to use, but in the case, such as here, where only one system of equations are investigated, it is adequate practically. 
+
+Just as in 1 dimesnion, Backward Euler here depends on Newton's method to solve for the next step. Here we have 4 dimensions, and the equation to be solved is 
+
+\begin{equation}
+	\mathbf{F}(\mathbf{x}^{n+1}) = \mathbf{x}^{{n+1}} - h \mathbf{f}(\mathbf{x}^{{n+1}}) - \mathbf{x}^n = 0
+\end{equation}
+
+To solve this equation, Newton's method must be employed. In order to use this method, the vector correspondant to the derivative must be used: the Jacobian. The algorithm is as follows: 
+
+\begin{enumerate}
+	\item Initialize $\textbf{x}^{n+1}_0$ with a good guess: pick $\textbf{x}^n$
+	\item Calculate $\textbf{F} = \textbf{x}^{n+1}_{j} - \textbf{x}^{n} - h \textbf{f}(\textbf{x}^{n+1}_{j})$
+	\item Calcuate the Jacobian $\mathcal{J}$ at the point $\textbf{x}^{n+1}_{j}$
+	\item $\textbf{x}^{n+1}_{j+1} = \textbf{x}^{n+1}_{j} - \mathcal{J}^{-1} \textbf{F}$
+	\item If $|\textbf{x}^{n+1}_{j+1} - \textbf{x}^{n+1}_{j}| \le $ threshold: next step is found.
+	\item Else: return to step 2.
+\end{enumerate}
+
+where $j$ here is the step of the Newton's method. Note here that $t$ only depends on itself, and will thus not be handled in the numerical methods, as it is trivial. Here has the threshold been set arbitrarily to \num{1e-8}, which is something that can be investigate, but has not been done in this study. 
+
+The Jacobian for the function has been omitted here, but can be found implemented in the code in the appendix INSERT APPENDIX! \todo[inline]{Insert appendix}
+
+\subsubsection{Runge-Kutte 4 (RK4)}
+
+Runge Kutta 4 is sort of an extension of the Euler Method, rather than calculating the timestep in one interval, RK4 does it in 4 steps. The method has the following equation:
+
+
+\begin{align}
+	\textbf{x}^{n+1} &= \frac{1}{6}h(k_1 + 2k_2 + 2k_3 + k_4) \textbf{x}^n \\
+	k_1 &= \textbf{f}(\textbf{x}^n) \\
+	k_2 &= \textbf{f}(\textbf{x}^n + \frac{1}{2}h k_1) \\
+	k_3 &= \textbf{f}(\textbf{x}^n + \frac{1}{2}h k_2) \\
+	k_4 &= \textbf{f}(\textbf{x}^n + h k_3)
+\end{align}
+
+The structure of an Euler method can be seen, but divided up into 4 smaller steps and the result is a weighted average over them yielding RK4. 
+
+\subsection{Analysis}
+
+\subsubsection{Energy conservation}
+To study how the integrators compare to each other we will investigate three properties. In orbital mechanics, and all dynamic systems without friction, it is important to conserve the energy. A system that looses energy will be less valid compared to one that does not when solving systems numerically. Energy conservation is the first thing that will be investigated. Given in equation (18.34) \cite{gould_2007}, energy per unit mass is given by
+
+\begin{equation}\label{eq:system-energy}
+	e = \left(1-\frac{2M}{r}\right)\frac{d\tau}{dt}
+\end{equation}
+
+where
+
+\begin{equation}
+	\frac{d\tau}{dt} = \left[\left(1-\frac{2M}{r}\right) - \left(1-\frac{2M}{r}\right)^{-1} \dot{r}^2 - r^2 \dot{\phi}^2\right]^{-1/2}	
+\end{equation}
+
+With this can the energy conservation be studied. In order to do that must initial values be set up. To not make matters too complicated will we study a system which is a small perturbance from the circular orbit solution, which is given by 
+
+\begin{equation}
+	v = \sqrt{M/r}, \; r \geq 6M
+\end{equation}
+
+\subsubsection{Error compared to analytical solution}
+
+Next, in order to see study how error depends on the choice of the time step we will be comparing the integrators to a known solution, namely the system which is perfectly circular. This is true when the initial conditions are $v=\sqrt{M/r}$ \cite{gould_2007}. This is the simplest analytical solution, which is adequate given the scope of the study. To study the error of the integrators we simply compare the radius of the solution (which is constant) to that of the integrators. 
+
+
+\subsubsection{Precession of the perihelion}
+
+To study a more non-trivial system instead we study a set of arbitrarily chosen initial conditions (that yield a stable system nonetheless), and instead of comparing to an exact solution (which would be very difficult to obtain) we study the \textit{perihelion precession}: how the point on the path closest to the mass center changes for each orbit. 
+
+The precession can be obtained by taking the difference in phase between two orbits $\Delta \varphi$, and subtracting by $2\pi$: $\phi = \Delta \varphi - 2\pi$. By studying how this precession evolves over time, we can compare the integrators and using different time step sizes, and becuase the complexity of calculating the precession analytically is high will merely the convergence of the perihelion precessions be used as the "error free value". 
+
+
+
