@@ -2,18 +2,29 @@
 
 \usepackage{graphicx}
 \usepackage{amsmath,amssymb}
+\usepackage{siunitx}
 \usepackage{graphbox}
+\usepackage{url}
 
 \newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
 
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage{parskip}
+\usepackage{todonotes}
+
+\usepackage{listings}
+\lstset{
+  breaklines=true
+}
+
+\usepackage[toc,page]{appendix}
+\usepackage{hyperref}
 
 \usepackage{physics}
-\usepackage{slashed}
+% \usepackage{slashed}
 
-\usepackage[compat=1.1.0]{tikz-feynman}
+% \usepackage[compat=1.1.0]{tikz-feynman}
 
 \usepackage{pgffor}
 
@@ -39,24 +50,46 @@
 \author{Axel Tibbling}
 \date{ }
 
-
 \begin{document}
 \maketitle
 
-%  Include nice image here
+%\input{introduction}
+%
+%\input{method}
+%
+%%\input{problem}
+%
+%\input{results}
+%
+%\input{discussion}
+%
+%\bibliographystyle{plain} % We choose the "plain" reference style
+%\bibliography{references} % Entries are in the refs.bib file
 
-\input{introduction}
 
-\input{method}
+\begin{appendices}
+\section{Appendix: integrator code}
 
-\input{results}
+\subsection{Euler method}
+\lstinputlisting[language=python]{../integrators/euler_forward.py}
 
-\input{discussion}
+\subsection{Backward Euler method}
+\lstinputlisting[language=python]{../integrators/back_euler.py}
+
+\subsection{RK4 method}
+\lstinputlisting[language=python]{../integrators/rk4.py}
+
+\subsection{base integrator}
+\lstinputlisting[language=python]{../integrators/base_integrator.py}
+
+\section{Running of simulations}
+All the simulatinos were run using Jupyter notebook importing the integrators, because it is easier to save work progress this way. If the full code, with notebooks, is wanted, please send an enquiry at \href{mailto:axeltib@kth.se}{axeltib@kth.se}. 
+
+\end{appendices}
 
 
-\bibliographystyle{plain} % We choose the "plain" reference style
-\bibliography{references} % Entries are in the refs.bib file
 \end{document}
 
 pdflatex: --aux-directory=build
 bibtex: build/% -use-directory=build
+

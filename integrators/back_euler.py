@@ -8,11 +8,9 @@ class BackEuler(Integrator):
     def __init__(self, initial_conditions, dt, t_end, t_start=0, M=1):
         super().__init__(initial_conditions, dt, t_end, t_start, M)
 
-    # def function_r_dot(self, x):
-    #     return (-4*self.M**2 + 2*self.M*x[0] + (x[0]-5*self.M) * x[0]**3 * x[3]**2) / (x[0]**3)
 
     def get_jacobian(self, x):
-        # TODO rewrite this thing
+        """ Calculates the Jacobian at state input x. """
         r = x[0]
         r_dot = x[1]
         phi_dot = x[3]
@@ -38,7 +36,7 @@ class BackEuler(Integrator):
         
         return J
 
-    def newtons_method(self, last_time_step, epsilon=1e-7):
+    def newtons_method(self, last_time_step, epsilon=1e-8):
         """ Returns the next state of the system. """
         x = last_time_step
         x_old = x + 1
@@ -63,26 +61,3 @@ class BackEuler(Integrator):
         last_time_step = self.obs[-1,:]
         return self.newtons_method(last_time_step)
         
-        
-        
-
-def main():
-    t_start = 0
-    t_end = 1
-    dt = 0.001
-    
-    # initial_conditions = {
-    #     "r": 1, 
-    #     "r_dot": 1, 
-    #     "phi": 1, 
-    #     "phi_dot": 1, 
-    #     "t": t_start
-    # }
-    
-    initial_conditions = np.array([1.0,1.0,1.0,1.0])
-    
-    integrator = BackEuler(initial_conditions, dt, t_end, t_start)
-    integrator.newtons_method(initial_conditions, initial_conditions)
-    
-if __name__ == '__main__':
-    main()

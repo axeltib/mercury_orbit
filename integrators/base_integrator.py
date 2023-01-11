@@ -57,7 +57,7 @@ class Integrator:
             self.obs[0,i] = val
 
     def get_system_energy(self):
-        # Calculate time derivative
+        """ Calculates the energy of the system at all saved states. """
         term1 = 1 - 2*self.M/self.obs[:,0]
         term2 = 1/term1 * self.obs[:,1]**2
         term3 = self.obs[:,0]**2 * self.obs[:,3]**2
@@ -67,16 +67,18 @@ class Integrator:
         return (1 - 2*self.M/self.obs[:,0]) * derivative
 
     def integrate_step(self, t):
+        """ Is implemented for each method. """
         pass
 
         
     def run_simulation(self):
+        """ Runs the simulator. """
         for t in self.t_array:
             self.obs = np.vstack((self.obs, self.integrate_step(t)))
             
     
 def main():
-    
+    # Tests that the base integrator works
     t_start = 0
     t_end = 1
     dt = 0.1

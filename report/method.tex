@@ -8,7 +8,7 @@ Before describing the integrators, we introduce the following notation for the s
 	(x_1, x_2, x_3, x_4) := (r, \dot{r}, \phi, \dot{\phi})
 \end{equation}
 
-and is denoted by $\textbf{x}^n$, where $i$ denotes the current step. Furthermore, the function $\textbf{f}(\textbf{x})$ is then defined as the EOMs \eqref{eq:eoms}. Finally, the timestep is defined as $h$.  
+and is denoted by $\textbf{x}^i$, where $i$ denotes the current step. The state coordinate $r$ is the radius from the central massive object, and $\dot{{r}}$ is the timederivative. At the same tame, predictably, $\phi$ describes the angle at which the orbiting object is in relation to the massive and $\dot{\phi}$ is the time derivative. Furthermore, the function $\textbf{f}(\textbf{x})$ is then defined as the EOMs \eqref{eq:eoms}. Finally, the timestep is defined as $h$, and is used as a parameter in the integrators.  
 
 \subsubsection{Euler method}
 Being one of the simplest numerical integrators, it serves as a good foundation to compare the other methods to. As we will se does it behave better in some regards, but is generally found to be the lower limit of performance between the integrators. The equation defining this method is
@@ -39,7 +39,9 @@ To solve this equation, Newton's method must be employed. In order to use this m
 	\item Else: return to step 2.
 \end{enumerate}
 
-where $j$ here is the step of the Newton's method. Note here that $t$ only depends on itself, and will thus not be handled in the numerical methods, as it is trivial.  
+where $j$ here is the step of the Newton's method. Note here that $t$ only depends on itself, and will thus not be handled in the numerical methods, as it is trivial. Here has the threshold been set arbitrarily to \num{1e-8}, which is something that can be investigate, but has not been done in this study. 
+
+The Jacobian for the function has been omitted here, but can be found implemented in the code in the appendix INSERT APPENDIX! \todo[inline]{Insert appendix}
 
 \subsubsection{Runge-Kutte 4 (RK4)}
 
@@ -54,7 +56,7 @@ Runge Kutta 4 is sort of an extension of the Euler Method, rather than calculati
 	k_4 &= \textbf{f}(\textbf{x}^n + h k_3)
 \end{align}
 
-The structure of the Euler method can be seen, but divided up into 4 smaller steps and the result is a weighted average over them. 
+The structure of an Euler method can be seen, but divided up into 4 smaller steps and the result is a weighted average over them yielding RK4. 
 
 \subsection{Analysis}
 
@@ -77,14 +79,16 @@ With this can the energy conservation be studied. In order to do that must initi
 	v = \sqrt{M/r}, \; r \geq 6M
 \end{equation}
 
-To it we add the perturbation (INSERT PERTURBATION HERE). 
+\subsubsection{Error compared to analytical solution}
 
-\subsubsection{Error compared to analytical solution - RMSE}
-
-\subsubsection{System dependence}
-Might be stupid tos study hahah
+Next, in order to see study how error depends on the choice of the time step we will be comparing the integrators to a known solution, namely the system which is perfectly circular. This is true when the initial conditions are $v=\sqrt{M/r}$ \cite{gould_2007}. This is the simplest analytical solution, which is adequate given the scope of the study. To study the error of the integrators we simply compare the radius of the solution (which is constant) to that of the integrators. 
 
 
+\subsubsection{Precession of the perihelion}
+
+To study a more non-trivial system instead we study a set of arbitrarily chosen initial conditions (that yield a stable system nonetheless), and instead of comparing to an exact solution (which would be very difficult to obtain) we study the \textit{perihelion precession}: how the point on the path closest to the mass center changes for each orbit. 
+
+The precession can be obtained by taking the difference in phase between two orbits $\Delta \varphi$, and subtracting by $2\pi$: $\phi = \Delta \varphi - 2\pi$. By studying how this precession evolves over time, we can compare the integrators and using different time step sizes, and becuase the complexity of calculating the precession analytically is high will merely the convergence of the perihelion precessions be used as the "error free value". 
 
 
 
